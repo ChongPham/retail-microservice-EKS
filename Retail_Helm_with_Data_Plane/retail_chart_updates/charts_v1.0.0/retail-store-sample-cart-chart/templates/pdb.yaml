@@ -1,0 +1,22 @@
+# một đối tượng (object) trong Kubernetes dùng để giới hạn số lượng Pod của một ứng dụng có thể bị gián đoạn đồng thời trong các sự 
+# kiện bảo trì hoặc thay đổi chủ động (voluntary disruptions) như kubectl drain, nâng cấp node, hoặc tự động co giãn (autoscaling)
+{{- if .Values.podDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "carts.fullname" . }}
+  labels:
+    {{- include "carts.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  # số lượng Pod carts đang chạy tối thiểu
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }} 
+  {{- end }}
+  {{- if .Values.podDisruptionBudget.maxUnavailable }}
+  # số lượng Pod carts có thể bị gián đoạn (không khả dụng) tối đa
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "carts.selectorLabels" . | nindent 6 }}
+{{- end }}

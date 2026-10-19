@@ -1,0 +1,117 @@
+# Default values for carts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: public.ecr.aws/aws-containers/retail-store-sample-cart
+  pullPolicy: IfNotPresent
+  tag: 
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+#Khi Pod khởi chạy, nếu ổ đĩa được gắn vào mà thuộc quyền sở hữu của root, các ứng dụng chạy dưới user thường (ví dụ user ID 1000)
+# sẽ bị lỗi Permission Denied không ghi được dữ liệu.
+# Khi bạn cấu hình fsGroup: 1000, Kubernetes sẽ tự động thay đổi quyền sở hữu (chown) toàn bộ các file và thư mục trong ổ đĩa đó
+# thành Group ID 1000 ngay trước khi mount vào container, giúp ứng dụng có đầy đủ quyền đọc/ghi một cách mượt mà và an toàn bảo mật.
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  # Ép hệ thống file gốc (root filesystem) của container ở chế độ chỉ đọc (Read-Only). Container không thể ghi bất kỳ file
+  #  mới nào vào thư mục gốc của nó. Việc này ngăn chặn mã độc tải file lạ về chạy hoặc thay đổi file hệ thống.
+  readOnlyRootFilesystem: true
+  # Ra lệnh cho Kubernetes tuyệt đối từ chối khởi động container nếu nó chạy dưới tài khoản root
+  runAsNonRoot: true
+  # Chỉ định cụ thể ID của user sẽ chạy ứng dụng là 1000
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  limits:
+    memory: 512Mi
+  requests:
+    cpu: 256m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+topologySpreadConstraints: []
+
+metrics:
+  enabled: true
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/actuator/prometheus"
+
+configMap:
+  create: true
+  name:
+
+app:
+  persistence:
+    provider: in-memory
+    dynamodb:
+      tableName: Items
+      createTable: false
+
+dynamodb:
+  create: false
+
+  image:
+    repository: public.ecr.aws/aws-dynamodb-local/aws-dynamodb-local
+    pullPolicy: IfNotPresent
+    tag: "1.25.1"
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  podAnnotations: {}
+
+  nodeSelector: {}
+
+  tolerations: []
+
+  affinity: {}
+
+opentelemetry:
+  enabled: false
+  instrumentation: ""
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 2
+  maxUnavailable: 1

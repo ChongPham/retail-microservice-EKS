@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "carts.fullname" . }}
+  labels:
+    {{- include "carts.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "carts.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if or .Values.podAnnotations .Values.metrics.enabled }}
+      annotations:
+        {{- include "carts.podAnnotations" . | nindent 8 }}
+        {{- if and .Values.opentelemetry.enabled .Values.opentelemetry.instrumentation }}
+        # Tiêm OpenTelemetry SDK vào pod để thu thập dữ liệu telemetry (metrics, traces, logs) từ ứng dụng.
+        # Khi bật tính năng này, ứng dụng sẽ tự động gửi dữ liệu telemetry đến OpenTelemetry Collector (OTel Collector) chạy trong cụm K8s, 
+        # từ đó dữ liệu sẽ được xuất ra các backend như AWS X-Ray, Prometheus, Grafana, v.v.
+        instrumentation.opentelemetry.io/inject-sdk: {{ .Values.opentelemetry.instrumentation }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "carts.selectorLabels" . | nindent 8 }}
+    spec:
+      # cấu hình nâng cao giúp kiểm soát cách Kubernetes 
+      # phân bổ các Pod của service carts sang các Availability Zones (AZ) khác nhau hoặc các node khác nhau trên AWS.
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Chỉ định thông tin xác thực (secret) để Kubernetes có thể tải (pull) Docker image từ các private registry
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Gắn một Kubernetes ServiceAccount (K8s SA) cụ thể cho Pod carts.
+      serviceAccountName: {{ include "carts.serviceAccountName" . }}
+      # Thiết lập các quy tắc bảo mật chung áp dụng cho toàn bộ các container chạy bên trong Pod này
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ "carts" }}
+          env:
+            - name: JAVA_OPTS
+              value: -XX:MaxRAMPercentage=75.0 -Djava.security.egd=file:/dev/urandom
+          envFrom:
+            - configMapRef:
+                name: {{ include "carts.configMapName" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.Version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # sử dụng cơ chế này để biết khi nào ứng dụng carts đã thực sự sẵn sàng nhận traffic từ bên ngoài.
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-volume
+      volumes:
+      # tạo một volume tạm thời (emptyDir) để lưu trữ dữ liệu tạm thời trong Pod.
+      # Vùng nhớ này được cấp phát từ RAM của node và sẽ mất khi Pod bị xóa hoặc khởi động lại. 
+      # Việc sử dụng emptyDir giúp tăng tốc độ truy cập dữ liệu tạm thời và giảm tải cho ổ đĩa vật lý.
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
