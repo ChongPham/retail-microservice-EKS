@@ -23,7 +23,7 @@ resource "aws_eks_cluster" "main" {
     # Allow access to public endpoint (from internet, controlled via CIDRs)
     endpoint_public_access = var.cluster_endpoint_public_access
 
-    # List of CIDRs allowed to reach the public endpoint
+    # List of CIDRs allowed to reach the public endpoint (need to endpoint_public_access = true)
     public_access_cidrs = var.cluster_endpoint_public_access_cidrs
   }
 

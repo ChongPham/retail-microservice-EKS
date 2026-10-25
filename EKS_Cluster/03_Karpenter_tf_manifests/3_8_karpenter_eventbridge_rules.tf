@@ -71,7 +71,7 @@ resource "aws_cloudwatch_event_target" "karpenter_spot_target" {
 
 # ----------------------------------------------------------------------------
 # EC2 Instance Rebalance Recommendation → SQS
-# Lắng nghe khuyến nghị tái cân bằng từ AWS => Chuẩn bị phương án thay thế node Spot sắp bị thu hồi
+# Lắng nghe khuyến nghị tái cân bằng từ AWS 
 # ----------------------------------------------------------------------------
 resource "aws_cloudwatch_event_rule" "karpenter_rebalance" {
   name        = "${local.short_cluster}-k-rebal"

@@ -7,6 +7,7 @@ resource "helm_release" "loadbalancer_controller" {
     aws_eks_addon.podidentity
   ]
 
+  # release name for the Helm chart
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"

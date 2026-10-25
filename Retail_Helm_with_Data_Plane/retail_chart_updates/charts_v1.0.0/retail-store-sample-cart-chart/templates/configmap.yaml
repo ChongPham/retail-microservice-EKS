@@ -11,6 +11,7 @@ data:
   RETAIL_CART_PERSISTENCE_PROVIDER: {{ .Values.app.persistence.provider }}
   {{- if (eq "dynamodb" .Values.app.persistence.provider) }}
   RETAIL_CART_PERSISTENCE_DYNAMODB_TABLE_NAME: {{ .Values.app.persistence.dynamodb.tableName }}
+  # có thể bỏ vì ko dùng database bên trong cluster nữa, mà dùng database thật trên AWS Cloud. Nhưng vẫn giữ lại để tiện cho việc test local.
   {{- if .Values.dynamodb.create }}
   # Local DynamoDB (for development/testing)
   RETAIL_CART_PERSISTENCE_DYNAMODB_CREATE_TABLE: "true"

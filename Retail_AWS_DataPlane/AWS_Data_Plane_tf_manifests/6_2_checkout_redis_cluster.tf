@@ -34,6 +34,8 @@ output "checkout_redis_endpoint" {
 
 #   # Cấu hình số lượng node (Ví dụ: 1 Primary và 1 Replica)
 #   num_cache_clusters          = 2 
+#   khác với num_Cache_node: Node hoàn toàn độc lập (shard dữ liệu) và không có cơ chế replication, failover. Còn Replication group thì có cơ chế replication, failover.
+#   automatic_failover_enabled  = true # Bật Multi-AZ để tự động Failover sang vùng khác nếu node chính sập
   
 #   # Bật Multi-AZ để tự động Failover sang vùng khác nếu node chính sập
 #   automatic_failover_enabled  = true 

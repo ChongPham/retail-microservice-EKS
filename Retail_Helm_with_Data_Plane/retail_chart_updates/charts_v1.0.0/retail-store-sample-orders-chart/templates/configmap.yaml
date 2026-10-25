@@ -5,6 +5,8 @@ metadata:
   name: {{ include "orders.configMapName" . }}
 data:
   RETAIL_ORDERS_MESSAGING_PROVIDER: {{ .Values.app.messaging.provider }}
+  # có thể bỏ vì ko dùng message broker bên trong cluster nữa, mà dùng message broker thật trên AWS Cloud. Nhưng vẫn giữ lại để tiện cho việc test local.
+  {{- if .Values.rabbitmq.create }}
   {{- if (eq "rabbitmq" .Values.app.messaging.provider) }}
   RETAIL_ORDERS_MESSAGING_RABBITMQ_ADDRESSES: {{ include "orders.rabbitmq.addresses" . }}
   {{- end }}

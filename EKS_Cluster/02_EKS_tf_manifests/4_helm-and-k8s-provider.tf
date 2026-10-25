@@ -3,6 +3,7 @@ data "aws_eks_cluster_auth" "cluster" {
   name = aws_eks_cluster.main.id
 }
 
+# Cho phép Terraform đóng vai trò như một Helm client để cài đặt, nâng cấp hoặc gỡ bỏ các Helm Chart trực tiếp vào cụm K8s
 # HELM Provider
 provider "helm" {
   kubernetes = {
@@ -12,6 +13,8 @@ provider "helm" {
   }
 }
 
+# Cho phép Terraform đọc, tạo, sửa, xóa các đối tượng Kubernetes thuần túy 
+# (như Deployment, Service, Namespace, ConfigMap, Secret, RoleBinding...) bằng code Terraform
 # Terraform Kubernetes Provider
 provider "kubernetes" {
   host                   = aws_eks_cluster.main.endpoint

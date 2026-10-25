@@ -47,7 +47,6 @@ resource "aws_iam_role_policy_attachment" "orders_sqs_policy_attach" {
   role       = aws_iam_role.orders_postgresql_getsecrets.name
 }
 
-
 # Outputs
 output "orders_sqs_policy_arn" {
   description = "ARN of the IAM policy granting SQS access for Orders microservice"
