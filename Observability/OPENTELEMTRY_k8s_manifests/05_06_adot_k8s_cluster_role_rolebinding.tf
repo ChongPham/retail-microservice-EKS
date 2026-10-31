@@ -16,7 +16,7 @@ resource "kubernetes_service_account_v1" "adot_collector" {
 
 
 # Kubernetes Cluster Role
-# Định nghĩa các quyền truy cập (permissions) mà ADOT Collector (hoặc resource khác) cần để thu thập dữ liệu từ Kubernetes API.
+# Định nghĩa các quyền truy cập (permissions) mà ADOT Collector cần để thu thập dữ liệu từ Kubernetes API.
 resource "kubernetes_cluster_role_v1" "otel_collector" {
   metadata {
     name = "otel-collector-cluster-role"

@@ -1,6 +1,20 @@
 # --------------------------------------------------------
 # AWS Region (used in provider block)
 # --------------------------------------------------------
+variable "grafana_alert_email_addresses" {
+  description = "Email recipients for Grafana alerts. Each recipient must confirm the SNS subscription."
+  type        = set(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for address in var.grafana_alert_email_addresses :
+      can(regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", address))
+    ])
+    error_message = "Each Grafana alert recipient must be a valid email address without whitespace."
+  }
+}
+
 variable "aws_region" {
   description = "AWS region to deploy resources"
   type        = string
@@ -33,7 +47,7 @@ variable "business_division" {
 variable "tags" {
   description = "Tags to apply to EKS and related resources"
   type        = map(string)
-  default     = {
+  default = {
     Terraform = "true"
   }
 }

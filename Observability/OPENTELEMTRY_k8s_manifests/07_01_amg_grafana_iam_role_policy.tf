@@ -6,7 +6,7 @@
 resource "aws_iam_policy" "amg_prometheus_policy" {
   name        = "${local.cluster_name}-amg-prometheus-policy"
   description = "IAM policy for Grafana to access Amazon Managed Prometheus"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -31,7 +31,7 @@ resource "aws_iam_policy" "amg_prometheus_policy" {
 resource "aws_iam_policy" "amg_sns_policy" {
   name        = "${local.cluster_name}-amg-sns-policy"
   description = "IAM policy for Grafana to publish AWS SNS notifications"
-  
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -41,7 +41,7 @@ resource "aws_iam_policy" "amg_sns_policy" {
           "sns:Publish"
         ]
         Resource = [
-          "arn:aws:sns:*:${local.account_id}:grafana*"
+          aws_sns_topic.grafana_alerts.arn
         ]
       }
     ]
@@ -50,14 +50,15 @@ resource "aws_iam_policy" "amg_sns_policy" {
 }
 
 # Policy 3: AWS X-Ray Read Only Access (AWS Managed Policy - reference only)
+# Quyền đọc dữ liệu từ AWS X-Ray
 data "aws_iam_policy" "xray_readonly" {
   arn = "arn:aws:iam::aws:policy/AWSXrayReadOnlyAccess"
 }
 
 # IAM ROLE FOR AMG
 resource "aws_iam_role" "amg_iam_role" {
-  name               = "${local.cluster_name}-amg-service-role"
-  description        = "IAM role for Amazon Managed Grafana"
+  name        = "${local.cluster_name}-amg-service-role"
+  description = "IAM role for Amazon Managed Grafana"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

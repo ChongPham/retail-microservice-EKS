@@ -1,5 +1,5 @@
 # Kube-state-metrics (KSM) chuyên đi "soi" trạng thái bên trong của các đối tượng (objects) do Kubernetes quản lý
-# Kube-state-metrics sẽ thu thập các thông tin về trạng thái của các đối tượng như Pod, Deployment, Service, Node, v.v... 
+# Kube-state-metrics sẽ thu thập các thông tin về trạng thái của các đối tượng như Pod, Deployment, Service, v.v... 
 # và xuất ra dưới dạng metrics để Prometheus có thể scrape và lưu trữ.
 
 # Datasource: To get default EKS addon version compatible with EKS cluster version
